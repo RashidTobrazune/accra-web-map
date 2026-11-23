@@ -1,6 +1,6 @@
 # Interactive Web Map: Greater Accra Heat, Land Cover & Healthcare Access
 
-**Live map → https://rashidtobrazune.github.io/accra-web-map/**
+<!--**Live map → https://rashidtobrazune.github.io/accra-web-map/**-->
 
 A single interactive Leaflet map that brings together the results of three Accra analysis projects. You can
 switch layers on and off, change the basemap, zoom down to street level, and click health facilities to see
