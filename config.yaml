@@ -1,0 +1,73 @@
+# Accra interactive web map — build configuration
+# Source rasters come from the three Accra analysis projects (run them first).
+
+title: "Greater Accra: Heat, Land Cover & Healthcare Access"
+center: [5.66, -0.16]   # lat, lon
+zoom: 11
+output: "docs/index.html"  # docs/ is what GitHub Pages serves
+opacity: 0.75
+
+layers:
+  - name: "Land surface temperature (°C)"
+    source: "../urban-heat-island-accra/outputs/lst_celsius.tif"
+    kind: continuous
+    cmap: "YlOrRd"
+    vmin: 31
+    vmax: 43
+    unit: "°C"
+    note: "Landsat 8/9, dry-season median (Dec–Feb 2020–2025), ~10:30 am"
+    show: true
+
+  - name: "Urban Thermal Field Variance Index"
+    source: "../urban-heat-island-accra/outputs/utfvi_class.tif"
+    kind: categorical
+    classes:
+      1: ["Excellent (< 0)", "#fff5eb"]
+      2: ["Good", "#fdd0a2"]
+      3: ["Normal", "#fdae6b"]
+      4: ["Bad", "#f16913"]
+      5: ["Worse", "#d94801"]
+      6: ["Worst (> 0.02)", "#7f2704"]
+    note: "Ecological evaluation of surface heat"
+
+  - name: "Land cover 2025"
+    source: "../land-cover-classification-accra/outputs/landcover_2025.tif"
+    kind: categorical
+    classes:
+      1: ["Tree cover", "#006400"]
+      2: ["Shrubland", "#ffbb22"]
+      3: ["Grassland / cropland", "#e6e64c"]
+      4: ["Built-up", "#e31a1c"]
+      5: ["Bare / sparse", "#b4b4b4"]
+      6: ["Water", "#0064c8"]
+      7: ["Wetland / mangrove", "#00a0a0"]
+    note: "Sentinel-2 Random Forest, 84% accuracy"
+
+  - name: "New built-up 2021→2025 (confident)"
+    source: "../land-cover-classification-accra/outputs/urban_change_confident.tif"
+    kind: categorical
+    classes:
+      1: ["Vegetation → built-up", "#d7191c"]
+    note: "Only pixels ≥70% confident in both years (a minimum estimate)"
+
+  - name: "Driving time to nearest hospital"
+    source: "../healthcare-access-accra/outputs/drive_minutes_to_hospital.tif"
+    kind: binned
+    breaks: [15, 30, 60]
+    colors: ["#fee8c8", "#fdbb84", "#e34a33", "#7f0000"]
+    unit: "min"
+    note: "OSM roads, typical speeds × 0.7 (light traffic)"
+
+  - name: "Walking time to nearest health facility"
+    source: "../healthcare-access-accra/outputs/walk_minutes_to_any_facility.tif"
+    kind: binned
+    breaks: [15, 30, 60]
+    colors: ["#fee8c8", "#fdbb84", "#e34a33", "#7f0000"]
+    unit: "min"
+    note: "4.5 km/h along the road network"
+
+facilities:
+  source: "../healthcare-access-accra/outputs/health_facilities.geojson"
+  name: "Health facilities (OpenStreetMap)"
+  hospital_color: "#08519c"
+  other_color: "#6baed6"

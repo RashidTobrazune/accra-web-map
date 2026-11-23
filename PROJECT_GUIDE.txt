@@ -1,0 +1,240 @@
+==========================================================================
+   ACCRA INTERACTIVE WEB MAP - A PLAIN-LANGUAGE PROJECT GUIDE
+==========================================================================
+
+This guide explains what the project does, why it was built this way, and
+how to run and publish it yourself. You do not need to be an expert.
+
+
+--------------------------------------------------------------------------
+1. WHAT IS THIS PROJECT, IN ONE PARAGRAPH?
+--------------------------------------------------------------------------
+
+We made three analyses of Accra: heat, land cover and healthcare access.
+Each produced maps as image files that only GIS software can open. This
+project puts all of them into ONE interactive map that anyone can open in
+a web browser, like Google Maps: you can zoom, switch layers on and off,
+change the background map, and click hospitals to see their names. It is
+published for free on the internet with GitHub Pages.
+
+
+--------------------------------------------------------------------------
+2. KEY IDEAS EXPLAINED SIMPLY
+--------------------------------------------------------------------------
+
+WEB MAP
+  A map inside a web page. The background ("basemap") is made of small
+  square images called TILES that load as you pan and zoom. Our analysis
+  results sit on top as see-through layers.
+
+LEAFLET
+  The most popular free JavaScript library for web maps. Many news
+  websites and government portals use it.
+
+FOLIUM
+  A Python library that writes Leaflet maps for you, so you can build a
+  web map without writing much JavaScript.
+
+WEB MERCATOR (EPSG:3857)
+  The map projection used by almost every web map (Google, OSM, Esri).
+  Our rasters were in other projections (UTM, lat/lon), so we reproject
+  them to Web Mercator. Otherwise they would be slightly shifted from
+  the basemap.
+
+RASTER OVERLAY
+  We turn each GeoTIFF into a coloured, partly transparent PNG picture
+  and tell Leaflet exactly where its corners go on the Earth.
+
+LAYER CONTROL AND LEGEND
+  The box on the right lets you turn layers on and off. A small piece of
+  JavaScript listens for those clicks and updates the legend at the
+  bottom left, so it always matches what you see.
+
+SELF-CONTAINED HTML
+  All the layers are packed inside one file (index.html, about 3.5 MB).
+  No server or database is needed, so free hosting works.
+
+GITHUB PAGES
+  A free GitHub feature that turns files in a repository into a public
+  website.
+
+
+--------------------------------------------------------------------------
+3. WHY DID WE MAKE THIS? (AND WHY ACCRA)
+--------------------------------------------------------------------------
+
+  1. IT CONNECTS THE ACCRA PROJECTS INTO ONE STORY.
+     Heat, land cover and healthcare are about the same city. Seeing
+     them together shows patterns, for example neighbourhoods that are
+     both very hot AND far from a clinic.
+
+  2. EMPLOYERS CAN SEE IT IN 10 SECONDS.
+     A recruiter will not install Python to look at your work, but they
+     WILL click a link. A live map is the most eye-catching portfolio item.
+
+  3. IT SHOWS A DIFFERENT SKILL: WEB GIS.
+     Many GIS jobs involve publishing maps online (dashboards, story maps,
+     open-data portals). This project proves you can do that.
+
+  4. IT NEEDED ALMOST NO NEW DATA.
+     Everything comes from results already on the computer. The only
+     downloads are the folium library (~1 MB) and the basemap tiles that
+     a visitor's browser loads.
+
+
+--------------------------------------------------------------------------
+4. WHAT IS ON THE MAP?
+--------------------------------------------------------------------------
+
+  LAYER                                   WHAT IT TELLS YOU
+  Land surface temperature (°C)           How hot the ground gets (31-43 °C)
+  Urban Thermal Field Variance Index      Heat "comfort" from Excellent to Worst
+  Land cover 2025                         Trees, grass, buildings, water...
+  New built-up 2021->2025 (confident)     Where vegetation became city
+  Driving time to nearest hospital        0-15 / 15-30 / 30-60 / >60 minutes
+  Walking time to nearest health facility Same bands, on foot
+  Health facilities (OpenStreetMap)       306 points; dark = hospital
+
+  Basemaps: Light gray, OpenStreetMap, Satellite imagery.
+
+  Try this:
+    - Turn on "Walking time" + "Land surface temperature" together.
+    - Switch to "Satellite imagery" and turn on "New built-up" to see
+      new neighbourhoods on the city edge.
+    - Click any blue dot to see the facility's name.
+
+
+--------------------------------------------------------------------------
+5. HOW THE PROGRAM WORKS (THE PIPELINE)
+--------------------------------------------------------------------------
+
+  STEP 1 - READ SETTINGS
+    config.yaml lists every layer: which file, what colours, what legend.
+
+  STEP 2 - REPROJECT EACH RASTER
+    Convert each GeoTIFF to Web Mercator so it lines up with the
+    basemap.
+
+  STEP 3 - COLOUR EACH RASTER
+    Three types:
+      continuous  - a smooth colour ramp (temperature)
+      categorical - one colour per class (land cover)
+      binned      - one colour per range (0-15 min, 15-30 min...)
+    No-data pixels become transparent.
+
+  STEP 4 - BUILD THE LEGENDS
+    Small pieces of HTML with coloured boxes or a colour bar.
+
+  STEP 5 - ASSEMBLE THE MAP
+    folium adds the basemaps, overlays, facility points with pop-ups, the
+    layer control, a full-screen button and a scale bar.
+
+  STEP 6 - SAVE
+    Everything is written into docs/index.html.
+
+
+--------------------------------------------------------------------------
+6. STEP-BY-STEP: BUILD AND PUBLISH IT YOURSELF
+--------------------------------------------------------------------------
+
+STEP A - Make sure the three Accra projects have been run
+  Their "outputs" folders must exist next to this project:
+      urban-heat-island-accra/outputs/
+      land-cover-classification-accra/outputs/
+      healthcare-access-accra/outputs/
+
+STEP B - Get the code and install
+
+      git clone https://github.com/RashidTobrazune/accra-web-map.git
+      cd accra-web-map
+      python -m venv .venv
+      Windows:      .venv\Scripts\activate
+      Mac/Linux:    source .venv/bin/activate
+      pip install -e ".[dev]"
+
+STEP C - Test and build
+
+      pytest                              (should say "6 passed")
+      build-webmap --config config.yaml
+
+  This takes a few seconds and creates docs/index.html.
+
+STEP D - Look at it on your computer
+  Double-click docs/index.html. If the map stays blank (some browsers
+  block online libraries for local files), run this instead:
+
+      cd docs
+      python -m http.server 8000
+
+  and open http://localhost:8000 in your browser.
+
+STEP E - Publish it on the internet (free)
+  1. Push the project to GitHub (already done for this repo).
+  2. On GitHub, open the repo -> Settings -> Pages.
+  3. Under "Build and deployment": Source = "Deploy from a branch",
+     Branch = "main", Folder = "/docs", then click Save.
+  4. Wait 1-2 minutes. Your map is live at:
+        https://rashidtobrazune.github.io/accra-web-map/
+  5. Put that link on your CV and LinkedIn.
+
+STEP F - Change things
+  Everything is in config.yaml:
+    - title, starting position (center) and zoom
+    - opacity of the layers (0 = invisible, 1 = solid)
+    - colours, class names, notes under each legend
+    - add a new layer: copy a block and point "source" to any GeoTIFF
+
+
+--------------------------------------------------------------------------
+7. WHAT EACH FILE IN THE PROJECT DOES
+--------------------------------------------------------------------------
+
+  config.yaml                  All settings for the map.
+  src/accra_webmap/rasters.py  Reprojects, colours and makes legends.
+  src/accra_webmap/build.py    Builds the web map and saves index.html.
+  tests/test_rasters.py        6 automatic checks.
+  docs/index.html              THE MAP (this is what GitHub Pages shows).
+  docs/images/screenshot.png   Picture used on the GitHub page.
+  README.md                    The project's front page on GitHub.
+  PROJECT_GUIDE.txt            This file.
+
+
+--------------------------------------------------------------------------
+8. LIMITATIONS
+--------------------------------------------------------------------------
+
+  - The layers are pictures, so you cannot click a pixel to read its
+    exact value (only the facility points have pop-ups).
+  - The file is 3.5 MB, so it loads slowly on a weak mobile connection.
+  - Layer quality is only as good as the analyses behind them; see each
+    project's limitations.
+  - Basemap tiles and the Leaflet library load from the internet, so the
+    map needs a connection to display fully.
+
+
+--------------------------------------------------------------------------
+9. IDEAS TO EXTEND THE PROJECT
+--------------------------------------------------------------------------
+
+  - Click-to-query: show the temperature / travel time at any clicked
+    point (store values in small tiles or use a "COG" + JavaScript).
+  - A split-screen slider to compare 2021 and 2025 land cover.
+  - Use district boundaries and show summary statistics per district.
+  - Rebuild it as a dashboard with charts (e.g. Streamlit or Dash).
+  - Add a "heat + far from care" vulnerability layer that combines two
+    analyses.
+
+
+--------------------------------------------------------------------------
+10. HOW TO EXPLAIN THIS PROJECT IN 30 SECONDS (E.G. IN AN INTERVIEW)
+--------------------------------------------------------------------------
+
+  "I combined three of my Accra analyses (land surface temperature,
+  machine-learning land cover and healthcare travel times) into one
+  interactive Leaflet web map built with Python and folium. The rasters
+  are reprojected to Web Mercator and styled from a config file, the
+  legend updates with the active layers, and the whole thing is a single
+  HTML file hosted free on GitHub Pages, so anyone can explore the
+  results in a browser without installing GIS software."
+
+==========================================================================

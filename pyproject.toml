@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "accra-webmap"
+version = "0.1.0"
+description = "Interactive Leaflet web map of Greater Accra: heat, land cover and healthcare access"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = ["folium>=0.15", "rasterio", "numpy", "matplotlib", "pyyaml"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+build-webmap = "accra_webmap.build:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
